@@ -309,6 +309,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void UARTInit(UARTStucrture *uart)
 {
+	//dynamic memory allocate
 	uart->RxBuffer = (uint8_t*) calloc(sizeof(uint8_t), UART2.RxLen);
 	uart->TxBuffer = (uint8_t*) calloc(sizeof(uint8_t), UART2.TxLen);
 	uart->RxTail = 0;
@@ -332,6 +333,7 @@ int16_t UARTReadChar(UARTStucrture *uart)
 	//check Buffer Position
 	if (uart->RxTail != UARTGetRxHead(uart))
 	{
+		//get data from buffer
 		Result = uart->RxBuffer[uart->RxTail];
 		uart->RxTail = (uart->RxTail + 1) % uart->RxLen;
 
@@ -365,7 +367,6 @@ void UARTTxDumpBuffer(UARTStucrture *uart)
 		MultiProcessBlocker = 0;
 	}
 }
-
 void UARTTxWrite(UARTStucrture *uart, uint8_t *pData, uint16_t len)
 {
 	//check data len is more than buffur?
@@ -389,6 +390,8 @@ void UARTTxWrite(UARTStucrture *uart, uint8_t *pData, uint16_t len)
 	UARTTxDumpBuffer(uart);
 
 }
+
+
 void DynamixelProtocal2(uint8_t *Memory, uint8_t MotorID, int16_t dataIn,
 		UARTStucrture *uart)
 {
@@ -485,7 +488,7 @@ void DynamixelProtocal2(uint8_t *Memory, uint8_t MotorID, int16_t dataIn,
 					&(uart->RxBuffer[uart->RxTail - packetSize]),
 					packetSize - 2);
 		}
-		else
+		else//overlapse
 		{
 			uint16_t firstPartStart = uart->RxTail - packetSize + uart->RxLen;
 			CRC_accum = update_crc(CRC_accum, &(uart->RxBuffer[firstPartStart]),
@@ -506,9 +509,11 @@ void DynamixelProtocal2(uint8_t *Memory, uint8_t MotorID, int16_t dataIn,
 						0x00 };
 				//config MotorID
 				temp[4] = MotorID;
+				//calcuate CRC
 				uint16_t crc_calc = update_crc(0, temp, 9);
 				temp[9] = crc_calc & 0xff;
 				temp[10] = (crc_calc >> 8) & 0xFF;
+				//Sent Response Packet
 				UARTTxWrite(uart, temp, 11);
 				break;
 			}
@@ -533,7 +538,7 @@ void DynamixelProtocal2(uint8_t *Memory, uint8_t MotorID, int16_t dataIn,
 			}
 			case 0x03://WRITE
 			{
-
+				//LAB
 			}
 			default: //Unknown Inst
 			{
