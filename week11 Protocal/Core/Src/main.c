@@ -49,6 +49,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
+//handle งานที่ uart ทำงานกับ dma
 typedef struct _UartStructure
 {
 	UART_HandleTypeDef *huart;
